@@ -1,0 +1,31 @@
+FROM alpine:3.4
+MAINTAINER cupen <cupen@foxmail.com>
+LABEL Description="这是一个包含多个 Python 版本的开发/测试环境，请勿用于正式环境。" Vendor="cupen" Version="0.0.1"
+
+ARG py27
+ARG py34
+ARG py35
+# ARG py36
+# ARG pypy27
+
+ENV PY27=${py27:-2.7.12}
+ENV PY34=${py34:-3.4.4}
+ENV PY35=${py35:-3.5.2}
+# ENV PY36=${py36:-3.6.0}
+# ENV PYPY27=${pypy27:-3.6.0}
+
+RUN apk update
+RUN apk add gcc g++ make                 # build env
+RUN apk add wget openssl tar xz          # https downloader
+RUN apk add openssl-dev ca-certificates  # python deps
+
+# check if the gcc and openssl-dev works.
+RUN echo -e "#include <stdio.h>\n#include <openssl/ssl.h>\nint main(void){printf(\"gcc works fine!\\\nopenssl-dev works fine!\\\n\");return 0;}" > test.c && cat test.c && gcc test.c -o test && ./test
+
+ADD install_python.sh ./
+RUN source ./install_python.sh && install_python $PY27
+RUN source ./install_python.sh && install_python $PY34
+RUN source ./install_python.sh && install_python $PY35
+
+# check if the gcc works.
+# RUN echo -e "#include <stdio.h>\nint main(void){printf(\"gcc works fine!\\\n\");return 0;}" > test.c && gcc test.c -o test && ./test
