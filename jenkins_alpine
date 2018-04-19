@@ -1,0 +1,22 @@
+FROM jenkins/jenkins:alpine
+
+USER root
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+RUN apk update \
+    && apk add gcc make subversion git \
+    && apk add python3 py3-pip ansible \
+    && apk add musl-dev libffi-dev openssl-dev python3-dev
+
+
+RUN pip3 install -U pip invoke docker-compose -i https://mirrors.ustc.edu.cn/pypi/web/simple
+RUN install-plugins.sh workflow-aggregator ant nodejs blueocean gradle htmlpublisher slack
+
+
+# clean
+RUN apk del musl-dev libffi-dev openssl-dev python3-dev
+RUN rm -rf /var/lib/apk/lists/* \
+    /var/cache/apk/* \
+    /usr/share/man \
+    /tmp/*
+
+USER jenkins
